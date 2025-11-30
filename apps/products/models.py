@@ -19,8 +19,8 @@ class Category(models.Model):
         null=True,
         related_name='subcategories'
     )
-    is_active = models. BooleanField(default=True)
-    created_at = models. DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'categories'
@@ -34,14 +34,14 @@ class Category(models.Model):
 class Product(models.Model):
     """Products listed by wholesalers"""
     
-    class StockStatus(models. TextChoices):
+    class StockStatus(models.TextChoices):
         IN_STOCK = 'in_stock', 'In Stock'
         LOW_STOCK = 'low_stock', 'Low Stock'
         OUT_OF_STOCK = 'out_of_stock', 'Out of Stock'
     
     wholesaler = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models. CASCADE,
+        on_delete=models.CASCADE,
         related_name='products',
         limit_choices_to={'user_type': 'wholesaler'}
     )
@@ -55,22 +55,22 @@ class Product(models.Model):
     slug = models.SlugField()
     description = models.TextField()
     sku = models.CharField(max_length=100, unique=True)
-    unit_price = models. DecimalField(max_digits=10, decimal_places=2)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     bulk_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    bulk_quantity = models. PositiveIntegerField(default=10, help_text="Minimum quantity for bulk price")
-    unit_of_measure = models. CharField(max_length=50, default='piece')  # piece, kg, carton, etc. 
+    bulk_quantity = models.PositiveIntegerField(default=10, help_text="Minimum quantity for bulk price")
+    unit_of_measure = models.CharField(max_length=50, default='piece')  # piece, kg, carton, etc.
     minimum_order_quantity = models.PositiveIntegerField(default=1)
     stock_quantity = models.PositiveIntegerField(default=0)
-    stock_status = models. CharField(
+    stock_status = models.CharField(
         max_length=20,
         choices=StockStatus.choices,
         default=StockStatus.IN_STOCK
     )
     low_stock_threshold = models.PositiveIntegerField(default=10)
-    is_active = models. BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=False)
-    created_at = models. DateTimeField(auto_now_add=True)
-    updated_at = models. DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'products'
@@ -83,11 +83,11 @@ class Product(models.Model):
     def save(self, *args, **kwargs):
         # Auto-update stock status
         if self.stock_quantity == 0:
-            self.stock_status = self. StockStatus.OUT_OF_STOCK
+            self.stock_status = self.StockStatus.OUT_OF_STOCK
         elif self.stock_quantity <= self.low_stock_threshold:
             self.stock_status = self.StockStatus.LOW_STOCK
         else:
-            self.stock_status = self. StockStatus.IN_STOCK
+            self.stock_status = self.StockStatus.IN_STOCK
         super().save(*args, **kwargs)
 
 
@@ -99,7 +99,7 @@ class ProductImage(models.Model):
         related_name='images'
     )
     image = models.ImageField(upload_to='products/')
-    is_primary = models. BooleanField(default=False)
+    is_primary = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

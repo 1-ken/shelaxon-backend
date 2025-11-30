@@ -2,9 +2,9 @@
 User models for Retailers and Wholesalers
 """
 
-from django.contrib. auth.models import AbstractUser
-from django. db import models
-from phonenumber_field. modelfields import PhoneNumberField
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 class User(AbstractUser):
@@ -15,20 +15,20 @@ class User(AbstractUser):
         WHOLESALER = 'wholesaler', 'Wholesaler'
         ADMIN = 'admin', 'Admin'
     
-    user_type = models. CharField(
+    user_type = models.CharField(
         max_length=20,
         choices=UserType.choices,
         default=UserType.RETAILER
     )
     phone_number = PhoneNumberField(unique=True, region='KE')
-    business_name = models. CharField(max_length=255)
-    business_registration_number = models. CharField(max_length=100, blank=True, null=True)
+    business_name = models.CharField(max_length=255)
+    business_registration_number = models.CharField(max_length=100, blank=True, null=True)
     location = models.CharField(max_length=255)
     city = models.CharField(max_length=100)
     is_verified = models.BooleanField(default=False)
     profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
-    created_at = models. DateTimeField(auto_now_add=True)
-    updated_at = models. DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'users'
@@ -53,9 +53,9 @@ class WholesalerProfile(models.Model):
         on_delete=models.CASCADE,
         related_name='wholesaler_profile'
     )
-    subscription_plan = models. CharField(
+    subscription_plan = models.CharField(
         max_length=20,
-        choices=SubscriptionPlan. choices,
+        choices=SubscriptionPlan.choices,
         default=SubscriptionPlan.FREE
     )
     subscription_expiry = models.DateField(blank=True, null=True)
@@ -67,8 +67,8 @@ class WholesalerProfile(models.Model):
         default=0
     )
     delivery_available = models.BooleanField(default=True)
-    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0. 0)
-    total_reviews = models. PositiveIntegerField(default=0)
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)
+    total_reviews = models.PositiveIntegerField(default=0)
 
     class Meta:
         db_table = 'wholesaler_profiles'
@@ -77,7 +77,7 @@ class WholesalerProfile(models.Model):
         return f"Wholesaler: {self.user.business_name}"
 
 
-class RetailerProfile(models. Model):
+class RetailerProfile(models.Model):
     """Extended profile for retailers"""
     
     class BusinessType(models.TextChoices):
@@ -94,8 +94,8 @@ class RetailerProfile(models. Model):
     )
     business_type = models.CharField(
         max_length=20,
-        choices=BusinessType. choices,
-        default=BusinessType. SHOP
+        choices=BusinessType.choices,
+        default=BusinessType.SHOP
     )
     preferred_wholesalers = models.ManyToManyField(
         User,
@@ -103,7 +103,7 @@ class RetailerProfile(models. Model):
         blank=True,
         limit_choices_to={'user_type': 'wholesaler'}
     )
-    credit_limit = models. DecimalField(
+    credit_limit = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         default=0

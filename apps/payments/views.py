@@ -24,7 +24,7 @@ class InitiateMpesaPaymentView(APIView):
         phone_number = serializer.validated_data['phone_number']
         
         try:
-            order = Order.objects. get(
+            order = Order.objects.get(
                 id=order_id,
                 retailer=request.user,
                 is_paid=False
@@ -47,7 +47,7 @@ class InitiateMpesaPaymentView(APIView):
         mpesa = MpesaClient()
         response = mpesa.stk_push(
             phone_number=phone_number,
-            amount=order. total_amount,
+            amount=order.total_amount,
             account_reference=order.order_number,
             transaction_desc=f"Payment for order {order.order_number}"
         )
@@ -63,8 +63,8 @@ class InitiateMpesaPaymentView(APIView):
                 "payment_id": payment.id
             })
         else:
-            payment.status = Payment. PaymentStatus. FAILED
-            payment.failure_reason = response. get('errorMessage', 'Unknown error')
+            payment.status = Payment.PaymentStatus.FAILED
+            payment.failure_reason = response.get('errorMessage', 'Unknown error')
             payment.save()
             
             return Response(
@@ -82,11 +82,11 @@ class MpesaCallbackView(APIView):
         
         # Extract callback data
         stk_callback = data.get('Body', {}).get('stkCallback', {})
-        checkout_request_id = stk_callback. get('CheckoutRequestID')
+        checkout_request_id = stk_callback.get('CheckoutRequestID')
         result_code = stk_callback.get('ResultCode')
         
         try:
-            payment = Payment.objects. get(
+            payment = Payment.objects.get(
                 mpesa_checkout_request_id=checkout_request_id
             )
         except Payment.DoesNotExist:
@@ -94,20 +94,20 @@ class MpesaCallbackView(APIView):
         
         if result_code == 0:
             # Payment successful
-            callback_metadata = stk_callback.get('CallbackMetadata', {}). get('Item', [])
+            callback_metadata = stk_callback.get('CallbackMetadata', {}).get('Item', [])
             
             for item in callback_metadata:
-                if item. get('Name') == 'MpesaReceiptNumber':
+                if item.get('Name') == 'MpesaReceiptNumber':
                     payment.mpesa_receipt_number = item.get('Value')
             
             payment.status = Payment.PaymentStatus.COMPLETED
             payment.completed_at = timezone.now()
-            payment. save()
+            payment.save()
             
             # Update order
-            order = payment. order
-            order. is_paid = True
-            order.paid_at = timezone. now()
+            order = payment.order
+            order.is_paid = True
+            order.paid_at = timezone.now()
             order.status = Order.OrderStatus.CONFIRMED
             order.save()
             
@@ -121,15 +121,15 @@ class MpesaCallbackView(APIView):
         return Response({"ResultCode": 0, "ResultDesc": "Callback received"})
 
 
-class PaymentListView(generics. ListAPIView):
+class PaymentListView(generics.ListAPIView):
     """List user's payments"""
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request. user
+        user = self.request.user
         if user.user_type == 'retailer':
-            return Payment.objects. filter(order__retailer=user)
+            return Payment.objects.filter(order__retailer=user)
         return Payment.objects.filter(order__wholesaler=user)
 
 
@@ -140,4 +140,6 @@ class PaymentDetailView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        if user. user_type == '
+        if user.user_type == 'retailer':
+            return Payment.objects.filter(order__retailer=user)
+        return Payment.objects.filter(order__wholesaler=user)

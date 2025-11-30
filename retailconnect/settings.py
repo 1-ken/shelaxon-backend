@@ -66,6 +66,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "retailconnect.wsgi.application"
+ASGI_APPLICATION = "retailconnect.asgi.application"
 
 DATABASES = {
     "default": {
@@ -157,4 +158,21 @@ SPECTACULAR_SETTINGS = {
         }
     },
     "SECURITY": [{"bearerAuth": []}],
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "json": {
+            "format": "%(asctime)s %(levelname)s %(name)s %(message)s",
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "json",
+        }
+    },
+    "root": {"level": "INFO", "handlers": ["console"]},
 }

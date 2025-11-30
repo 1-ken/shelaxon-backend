@@ -17,7 +17,7 @@ class CategorySerializer(serializers.ModelSerializer):
         return CategorySerializer(obj.subcategories.filter(is_active=True), many=True).data
 
 
-class ProductImageSerializer(serializers. ModelSerializer):
+class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
         fields = ['id', 'image', 'is_primary']
@@ -25,7 +25,7 @@ class ProductImageSerializer(serializers. ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
-    category_name = serializers. CharField(source='category.name', read_only=True)
+    category_name = serializers.CharField(source='category.name', read_only=True)
     wholesaler_name = serializers.CharField(source='wholesaler.business_name', read_only=True)
 
     class Meta:
@@ -40,7 +40,7 @@ class ProductSerializer(serializers.ModelSerializer):
         read_only_fields = ['wholesaler', 'stock_status']
 
 
-class ProductCreateSerializer(serializers. ModelSerializer):
+class ProductCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = [
@@ -50,5 +50,5 @@ class ProductCreateSerializer(serializers. ModelSerializer):
         ]
 
     def create(self, validated_data):
-        validated_data['wholesaler'] = self.context['request']. user
+        validated_data['wholesaler'] = self.context['request'].user
         return super().create(validated_data)

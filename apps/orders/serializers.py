@@ -7,7 +7,7 @@ from .models import Order, OrderItem, Cart, CartItem
 from apps.products.serializers import ProductSerializer
 
 
-class OrderItemSerializer(serializers. ModelSerializer):
+class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
         fields = ['id', 'product', 'product_name', 'quantity', 'unit_price', 'total_price']
@@ -16,7 +16,7 @@ class OrderItemSerializer(serializers. ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
-    retailer_name = serializers. CharField(source='retailer.business_name', read_only=True)
+    retailer_name = serializers.CharField(source='retailer.business_name', read_only=True)
     wholesaler_name = serializers.CharField(source='wholesaler.business_name', read_only=True)
 
     class Meta:
@@ -44,7 +44,7 @@ class CartItemSerializer(serializers.ModelSerializer):
         fields = ['id', 'product', 'product_id', 'quantity', 'total_price']
 
 
-class CartSerializer(serializers. ModelSerializer):
+class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
     total = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
 
@@ -57,4 +57,4 @@ class CheckoutSerializer(serializers.Serializer):
     """Serializer for checkout process"""
     delivery_address = serializers.CharField()
     delivery_city = serializers.CharField()
-    delivery_notes = serializers. CharField(required=False, allow_blank=True)
+    delivery_notes = serializers.CharField(required=False, allow_blank=True)

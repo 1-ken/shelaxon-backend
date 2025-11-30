@@ -20,9 +20,9 @@ class PaymentSerializer(serializers.ModelSerializer):
         ]
 
 
-class MpesaPaymentSerializer(serializers. Serializer):
+class MpesaPaymentSerializer(serializers.Serializer):
     """Serializer for initiating M-Pesa payment"""
-    order_id = serializers. IntegerField()
+    order_id = serializers.IntegerField()
     phone_number = serializers.CharField(max_length=20)
 
     def validate_phone_number(self, value):
