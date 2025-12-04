@@ -2,29 +2,57 @@
 
 A Django REST API for connecting retailers and wholesalers in Kenya.
 
-## Prerequisites
-- Python 3.14 (virtualenv created at `.venv`)
+## 🚀 Quick Start Options
+
+### Option 1: Docker (Recommended) 🐳
+
+**Prerequisites:**
+- Docker & Docker Compose installed
+
+```bash
+# 1. Clone and navigate to project
+git clone <repository-url>
+cd retailconnect_kenya
+
+# 2. Copy environment file
+cp .env.example .env
+
+# 3. Build and run
+docker-compose up --build
+
+# 4. Access the application
+# API Docs: http://localhost:8000/api/docs
+# Admin: http://localhost:8000/admin (admin/admin123)
+```
+
+📖 **[Full Docker Setup Guide](./DOCKER_SETUP.md)**
+
+### Option 2: Local Development 💻
+
+**Prerequisites:**
+- Python 3.11+ (virtualenv created at `.venv`)
 - MySQL 8.x (or compatible)
 - Redis (optional, for Celery broker/results)
 
-## Quick Start (Windows PowerShell)
-
 ```powershell
+# Windows PowerShell
+
 # 1) Activate virtual environment
-C:/Users/kenni/Desktop/retailconnect_kenya/rr/retailconnect_kenya/.venv/Scripts/Activate.ps1
+.venv/Scripts/Activate.ps1
 
 # 2) Install dependencies
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# 3) Create .env with your settings (see below)
+# 3) Create .env (see Environment Variables section)
+
 # 4) Create database in MySQL
-#    Example: CREATE DATABASE retailconnect_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+# Example: CREATE DATABASE retailconnect_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 # 5) Apply migrations
 python manage.py migrate
 
-# 6) Create superuser (optional)
+# 6) Create superuser
 python manage.py createsuperuser
 
 # 7) Run development server
@@ -32,23 +60,42 @@ python manage.py runserver
 ```
 
 ## Environment Variables (.env)
-Create a `.env` file in the project root (`retailconnect_kenya`) with values matching your setup.
 
+### For Docker:
 ```dotenv
 # Core
 SECRET_KEY=change-me
 DEBUG=true
 ALLOWED_HOSTS=localhost,127.0.0.1
 
-# Database
+# Database (Docker service names)
+DB_NAME=retailconnect_db
+DB_USER=retailuser
+DB_PASSWORD=retailpassword
+DB_HOST=db
+DB_PORT=3306
+
+# Redis (Docker service name)
+REDIS_URL=redis://redis:6379/0
+```
+
+### For Local Development:
+```dotenv
+# Core
+SECRET_KEY=change-me
+DEBUG=true
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Database (Local MySQL)
 DB_NAME=retailconnect_db
 DB_USER=root
 DB_PASSWORD=your_mysql_password
 DB_HOST=localhost
 DB_PORT=3306
 
-# Redis / Celery (optional)
+# Redis (Local Redis)
 REDIS_URL=redis://localhost:6379/0
+```
 
 # M-Pesa (fill with real credentials)
 MPESA_CONSUMER_KEY=

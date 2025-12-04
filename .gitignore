@@ -73,3 +73,11 @@ logs/
 # OS
 Thumbs.db
 .DS_Store
+
+# Docker
+*.sql
+backups/
+mysql_data/
+redis_data/
+docker-compose.override.yml
+

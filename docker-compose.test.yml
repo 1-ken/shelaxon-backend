@@ -1,0 +1,42 @@
+version: '3.8'
+
+# Docker Compose for Testing/CI
+services:
+  db-test:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: test_retailconnect_db
+      MYSQL_ROOT_PASSWORD: testpassword
+      MYSQL_USER: testuser
+      MYSQL_PASSWORD: testpassword
+    tmpfs:
+      - /var/lib/mysql  # Use tmpfs for faster tests
+    networks:
+      - test_network
+
+  redis-test:
+    image: redis:7-alpine
+    networks:
+      - test_network
+
+  web-test:
+    build: .
+    command: python manage.py test
+    environment:
+      - DB_HOST=db-test
+      - DB_PORT=3306
+      - DB_NAME=test_retailconnect_db
+      - DB_USER=testuser
+      - DB_PASSWORD=testpassword
+      - REDIS_URL=redis://redis-test:6379/0
+      - SECRET_KEY=test-secret-key-for-ci
+      - DEBUG=false
+    depends_on:
+      - db-test
+      - redis-test
+    networks:
+      - test_network
+
+networks:
+  test_network:
+    driver: bridge
