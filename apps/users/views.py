@@ -4,18 +4,25 @@ User Views
 
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 from .serializers import (
     UserRegistrationSerializer,
     UserSerializer,
     WholesalerProfileSerializer,
-    RetailerProfileSerializer
+    CustomTokenObtainPairSerializer,
 )
-from .models import WholesalerProfile, RetailerProfile
+from .models import WholesalerProfile
 
 User = get_user_model()
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    """Login view that returns clearer auth errors."""
+
+    serializer_class = CustomTokenObtainPairSerializer
+    throttle_scope = "login"
 
 
 class UserRegistrationView(generics.CreateAPIView):

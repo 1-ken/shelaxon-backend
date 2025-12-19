@@ -35,3 +35,11 @@ phonenumbers>=8.13.0
 # Production
 gunicorn>=21.2.0
 whitenoise>=6.6.0
+
+# Development & Testing
+flake8>=7.0.0
+pylint>=3.0.0
+mypy>=1.8.0
+django-stubs>=4.2.0
+pytest>=7.4.0
+pytest-django>=4.7.0

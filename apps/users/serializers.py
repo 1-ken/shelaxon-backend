@@ -3,6 +3,8 @@ User Serializers
 """
 
 from rest_framework import serializers
+from rest_framework import exceptions
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from .models import WholesalerProfile, RetailerProfile
@@ -68,3 +70,36 @@ class RetailerProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = RetailerProfile
         fields = '__all__'
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """JWT login with clearer error messages."""
+
+    def validate(self, attrs):
+        username = attrs.get(self.username_field)
+        password = attrs.get("password")
+
+        if not username or not password:
+            raise exceptions.ValidationError("Username and password are required.")
+
+        user = User.objects.filter(**{self.username_field: username}).first()
+        if user is None:
+            raise exceptions.AuthenticationFailed("User is not registered.", code="user_not_found")
+
+        if not user.is_active:
+            raise exceptions.AuthenticationFailed(
+                "Account is inactive. Please contact support.",
+                code="account_inactive",
+            )
+
+        if not user.check_password(password):
+            raise exceptions.AuthenticationFailed("Invalid username or password.", code="invalid_credentials")
+
+        self.user = user  # Required so JWT tokens bind to this user
+        refresh = self.get_token(user)
+
+        return {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+            "user": UserSerializer(user).data,
+        }
