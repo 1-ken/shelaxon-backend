@@ -1,9 +1,9 @@
-from rest_framework import viewsets, permissions, generics, status
+from rest_framework import permissions, generics, status
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
-from .models import Product, Category, ProductImage
+from .models import Product, Category
 from .serializers import (
     ProductSerializer,
     ProductCreateSerializer,

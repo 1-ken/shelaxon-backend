@@ -1,17 +1,16 @@
 from django.db import models
-from django.conf import settings
 
 
 class Delivery(models.Model):
     """Delivery tracking for orders"""
-    
+
     class DeliveryStatus(models.TextChoices):
         PENDING = 'pending', 'Pending'
         ASSIGNED = 'assigned', 'Assigned'
         IN_TRANSIT = 'in_transit', 'In Transit'
         DELIVERED = 'delivered', 'Delivered'
         FAILED = 'failed', 'Failed'
-    
+
     order = models.OneToOneField(
         'orders.Order',
         on_delete=models.CASCADE,

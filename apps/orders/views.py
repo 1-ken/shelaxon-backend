@@ -131,7 +131,12 @@ class CheckoutView(APIView):
                     product=product,
                     product_name=product.name,
                     quantity=cart_item.quantity,
-                    unit_price=product.bulk_price if cart_item.quantity >= product.bulk_quantity and product.bulk_price else product.unit_price
+                    unit_price=(
+                        product.bulk_price
+                        if cart_item.quantity >= product.bulk_quantity
+                        and product.bulk_price
+                        else product.unit_price
+                    ),
                 )
                 
                 # Update stock

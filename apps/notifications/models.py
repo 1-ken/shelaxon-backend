@@ -4,7 +4,7 @@ from django.conf import settings
 
 class Notification(models.Model):
     """User notifications"""
-    
+
     class NotificationType(models.TextChoices):
         ORDER_PLACED = 'order_placed', 'Order Placed'
         ORDER_CONFIRMED = 'order_confirmed', 'Order Confirmed'
@@ -14,7 +14,7 @@ class Notification(models.Model):
         PAYMENT_FAILED = 'payment_failed', 'Payment Failed'
         STOCK_LOW = 'stock_low', 'Stock Low'
         GENERAL = 'general', 'General'
-    
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

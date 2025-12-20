@@ -12,9 +12,7 @@ def custom_exception_handler(exc, context):
     response = exception_handler(exc, context)
 
     if isinstance(exc, ParseError):
-        return Response(
-            {"detail": "Invalid JSON payload. Please check your request body."},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        message = "Invalid JSON payload. Please check your request body."
+        return Response({"detail": message}, status=status.HTTP_400_BAD_REQUEST)
 
     return response

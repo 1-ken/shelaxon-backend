@@ -57,14 +57,13 @@ class MpesaClient:
         access_token = self.get_access_token()
         if not access_token:
             return {"error": "Failed to get access token"}
-        
         password, timestamp = self.generate_password()
-        
+
         headers = {
             "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
-        
+
         payload = {
             "BusinessShortCode": self.shortcode,
             "Password": password,
@@ -76,10 +75,14 @@ class MpesaClient:
             "PhoneNumber": phone_number,
             "CallBackURL": self.callback_url,
             "AccountReference": account_reference,
-            "TransactionDesc": transaction_desc
+            "TransactionDesc": transaction_desc,
         }
-        
-        response = requests.post(self.stk_push_url, json=payload, headers=headers)
+
+        response = requests.post(
+            self.stk_push_url,
+            json=payload,
+            headers=headers,
+        )
         return response.json()
 
     def query_stk_status(self, checkout_request_id):
@@ -89,18 +92,22 @@ class MpesaClient:
             return {"error": "Failed to get access token"}
         
         password, timestamp = self.generate_password()
-        
+
         headers = {
             "Authorization": f"Bearer {access_token}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
-        
+
         payload = {
             "BusinessShortCode": self.shortcode,
             "Password": password,
             "Timestamp": timestamp,
-            "CheckoutRequestID": checkout_request_id
+            "CheckoutRequestID": checkout_request_id,
         }
-        
-        response = requests.post(self.stk_query_url, json=payload, headers=headers)
+
+        response = requests.post(
+            self.stk_query_url,
+            json=payload,
+            headers=headers,
+        )
         return response.json()

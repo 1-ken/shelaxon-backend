@@ -4,6 +4,12 @@ from .models import Delivery
 
 @admin.register(Delivery)
 class DeliveryAdmin(admin.ModelAdmin):
-    list_display = ['order', 'driver_name', 'status', 'estimated_delivery_time', 'created_at']
+    list_display = [
+        'order',
+        'driver_name',
+        'status',
+        'estimated_delivery_time',
+        'created_at',
+    ]
     list_filter = ['status', 'created_at']
     search_fields = ['order__order_number', 'driver_name', 'vehicle_number']
