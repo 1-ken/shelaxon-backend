@@ -27,7 +27,7 @@ class User(AbstractUser):
     location = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=100)
     is_verified = models.BooleanField(default=False)
-    profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
+    profile_image = models.URLField(max_length=500, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -10,7 +10,7 @@ from .views import (
     UserProfileView,
     WholesalerListView,
     WholesalerDetailView,
-    RetailerProfileUpdateView
+    ProfileUpdateView
 )
 
 urlpatterns = [
@@ -21,7 +21,7 @@ urlpatterns = [
     
     # Profile
     path('profile/', UserProfileView.as_view(), name='user-profile'),
-    path('retailer/profile/update/', RetailerProfileUpdateView.as_view(), name='retailer-profile-update'),
+    path('profile/update/', ProfileUpdateView.as_view(), name='profile-update'),
     
     # Wholesalers
     path('wholesalers/', WholesalerListView.as_view(), name='wholesaler-list'),

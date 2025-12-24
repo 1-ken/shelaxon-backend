@@ -13,8 +13,9 @@ User = get_user_model()
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, validators=[validate_password])
-    password_confirm = serializers.CharField(write_only=True)
+    """Serializer for user registration. Creates a new user account."""
+    password = serializers.CharField(write_only=True, validators=[validate_password], help_text="User password (must meet security requirements)")
+    password_confirm = serializers.CharField(write_only=True, help_text="Confirm password (must match password)")
 
     class Meta:
         model = User
@@ -22,6 +23,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             'id', 'username', 'phone_number', 'password', 'password_confirm',
             'user_type', 'business_name', 'city'
         ]
+        extra_kwargs = {
+            'username': {'help_text': 'Unique username for the account'},
+            'phone_number': {'help_text': 'Phone number in international format (e.g., +254712345678)'},
+            'user_type': {'help_text': 'Type of user: retailer or wholesaler'},
+            'business_name': {'help_text': 'Name of the business'},
+            'city': {'help_text': 'City where the business is located'}
+        }
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:
@@ -71,20 +79,40 @@ class RetailerProfileSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class RetailerProfileUpdateSerializer(serializers.ModelSerializer):
-    """Serializer for updating retailer profile details"""
-    email = serializers.EmailField(required=False, allow_blank=True)
-    business_registration_number = serializers.CharField(required=False, allow_blank=True)
-    location = serializers.CharField(required=False, allow_blank=True)
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for updating user profile details. All fields are optional."""
+    username = serializers.CharField(required=False, help_text="Unique username for the user")
+    email = serializers.EmailField(required=False, allow_blank=True, allow_null=True, help_text="User's email address")
+    phone_number = serializers.CharField(required=False, help_text="Phone number in international format (e.g., +254712345678)")
+    business_name = serializers.CharField(required=False, help_text="Name of the business")
+    location = serializers.CharField(required=False, allow_blank=True, allow_null=True, help_text="Business location/address")
+    city = serializers.CharField(required=False, help_text="City where the business is located")
+    profile_image = serializers.URLField(required=False, allow_blank=True, allow_null=True, help_text="URL to the user's profile image")
 
     class Meta:
         model = User
-        fields = ['email', 'business_registration_number', 'location']
+        fields = ['username', 'email', 'phone_number', 'business_name', 'location', 'city', 'profile_image']
+
+    def validate_username(self, value):
+        user = self.context['request'].user
+        if User.objects.exclude(pk=user.pk).filter(username=value).exists():
+            raise serializers.ValidationError("This username is already taken.")
+        return value
+
+    def validate_phone_number(self, value):
+        user = self.context['request'].user
+        if User.objects.exclude(pk=user.pk).filter(phone_number=value).exists():
+            raise serializers.ValidationError("This phone number is already registered.")
+        return value
 
     def update(self, instance, validated_data):
+        instance.username = validated_data.get('username', instance.username)
         instance.email = validated_data.get('email', instance.email)
-        instance.business_registration_number = validated_data.get('business_registration_number', instance.business_registration_number)
+        instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+        instance.business_name = validated_data.get('business_name', instance.business_name)
         instance.location = validated_data.get('location', instance.location)
+        instance.city = validated_data.get('city', instance.city)
+        instance.profile_image = validated_data.get('profile_image', instance.profile_image)
         instance.save()
         return instance
 
