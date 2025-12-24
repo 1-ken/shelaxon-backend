@@ -9,7 +9,8 @@ from .views import (
     UserRegistrationView,
     UserProfileView,
     WholesalerListView,
-    WholesalerDetailView
+    WholesalerDetailView,
+    RetailerProfileUpdateView
 )
 
 urlpatterns = [
@@ -20,6 +21,7 @@ urlpatterns = [
     
     # Profile
     path('profile/', UserProfileView.as_view(), name='user-profile'),
+    path('retailer/profile/update/', RetailerProfileUpdateView.as_view(), name='retailer-profile-update'),
     
     # Wholesalers
     path('wholesalers/', WholesalerListView.as_view(), name='wholesaler-list'),

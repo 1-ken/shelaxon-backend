@@ -20,10 +20,11 @@ class User(AbstractUser):
         choices=UserType.choices,
         default=UserType.RETAILER
     )
+    email = models.EmailField(blank=True, null=True)
     phone_number = PhoneNumberField(unique=True, region='KE')
     business_name = models.CharField(max_length=255)
     business_registration_number = models.CharField(max_length=100, blank=True, null=True)
-    location = models.CharField(max_length=255)
+    location = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=100)
     is_verified = models.BooleanField(default=False)
     profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)

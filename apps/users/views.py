@@ -11,9 +11,10 @@ from .serializers import (
     UserRegistrationSerializer,
     UserSerializer,
     WholesalerProfileSerializer,
+    RetailerProfileUpdateSerializer,
     CustomTokenObtainPairSerializer,
 )
-from .models import WholesalerProfile
+from .models import WholesalerProfile, RetailerProfile
 
 User = get_user_model()
 
@@ -75,3 +76,30 @@ class WholesalerDetailView(generics.RetrieveAPIView):
     queryset = WholesalerProfile.objects.all()
     serializer_class = WholesalerProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
+class RetailerProfileUpdateView(generics.UpdateAPIView):
+    """Update retailer profile details (email, business_registration_number, location)"""
+    serializer_class = RetailerProfileUpdateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        # Check if user is a retailer
+        if self.request.user.user_type != 'retailer':
+            return Response(
+                {'error': 'Only retailers can update retailer profile'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return self.request.user
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response({
+            'message': 'Retailer profile updated successfully',
+            'user': UserSerializer(instance).data
+        }, status=status.HTTP_200_OK)

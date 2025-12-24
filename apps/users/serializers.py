@@ -19,9 +19,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'id', 'username', 'email', 'password', 'password_confirm',
-            'user_type', 'phone_number', 'business_name', 
-            'business_registration_number', 'location', 'city'
+            'id', 'username', 'phone_number', 'password', 'password_confirm',
+            'user_type', 'business_name', 'city'
         ]
 
     def validate(self, attrs):
@@ -70,6 +69,24 @@ class RetailerProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = RetailerProfile
         fields = '__all__'
+
+
+class RetailerProfileUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for updating retailer profile details"""
+    email = serializers.EmailField(required=False, allow_blank=True)
+    business_registration_number = serializers.CharField(required=False, allow_blank=True)
+    location = serializers.CharField(required=False, allow_blank=True)
+
+    class Meta:
+        model = User
+        fields = ['email', 'business_registration_number', 'location']
+
+    def update(self, instance, validated_data):
+        instance.email = validated_data.get('email', instance.email)
+        instance.business_registration_number = validated_data.get('business_registration_number', instance.business_registration_number)
+        instance.location = validated_data.get('location', instance.location)
+        instance.save()
+        return instance
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
