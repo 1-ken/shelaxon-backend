@@ -1,0 +1,1093 @@
+{
+	"info": {
+		"_postman_id": "retailconnect-kenya-api",
+		"name": "RetailConnect Kenya API",
+		"description": "Complete API collection for RetailConnect Kenya - B2B E-commerce platform connecting wholesalers and retailers",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/healthz",
+							"host": ["{{base_url}}"],
+							"path": ["healthz"]
+						},
+						"description": "Check if the API server is running"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    console.log('User registered successfully');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"phone_number\": \"+254712345678\",\n    \"password\": \"SecurePassword123!\",\n    \"password_confirm\": \"SecurePassword123!\",\n    \"user_type\": \"retailer\",\n    \"business_name\": \"Test Business\",\n    \"city\": \"Nairobi\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/register/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "register", ""]
+						},
+						"description": "Register a new user account. User types: 'retailer' or 'wholesaler'"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('access_token', jsonData.access);",
+									"    pm.collectionVariables.set('refresh_token', jsonData.refresh);",
+									"    console.log('Tokens saved successfully');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"password\": \"SecurePassword123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/login/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "login", ""]
+						},
+						"description": "Login with username and password. Returns JWT access and refresh tokens."
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('access_token', jsonData.access);",
+									"    console.log('Access token refreshed');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refresh\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/token/refresh/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "token", "refresh", ""]
+						},
+						"description": "Refresh the access token using the refresh token"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get My Profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/profile/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "profile", ""]
+						},
+						"description": "Get the current authenticated user's profile"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"updatedusername\",\n    \"email\": \"user@example.com\",\n    \"phone_number\": \"+254712345678\",\n    \"business_name\": \"Updated Business Name\",\n    \"location\": \"Westlands, Nairobi\",\n    \"city\": \"Nairobi\",\n    \"profile_image\": \"https://example.com/image.jpg\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/profile/update/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "profile", "update", ""]
+						},
+						"description": "Update the current user's profile. All fields are optional."
+					},
+					"response": []
+				},
+				{
+					"name": "List Wholesalers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/wholesalers/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "wholesalers", ""]
+						},
+						"description": "Get a list of all registered wholesalers"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Wholesaler Detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/wholesalers/:id/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "wholesalers", ":id", ""],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Wholesaler ID"
+								}
+							]
+						},
+						"description": "Get details of a specific wholesaler by ID"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Categories",
+					"item": [
+						{
+							"name": "List Categories",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/products/categories/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "products", "categories", ""]
+								},
+								"description": "Get all product categories"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Public Products",
+					"item": [
+						{
+							"name": "List All Products",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/products/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "products", ""]
+								},
+								"description": "Get all available products (public)"
+							},
+							"response": []
+						},
+						{
+							"name": "List Products with Filters",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/products/?category=1&search=rice&min_price=100&max_price=5000",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "products", ""],
+									"query": [
+										{
+											"key": "category",
+											"value": "1",
+											"description": "Filter by category ID"
+										},
+										{
+											"key": "search",
+											"value": "rice",
+											"description": "Search by product name"
+										},
+										{
+											"key": "min_price",
+											"value": "100",
+											"description": "Minimum price filter"
+										},
+										{
+											"key": "max_price",
+											"value": "5000",
+											"description": "Maximum price filter"
+										}
+									]
+								},
+								"description": "Get products with optional filters"
+							},
+							"response": []
+						},
+						{
+							"name": "Get Product Detail",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/products/:id/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "products", ":id", ""],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Product ID"
+										}
+									]
+								},
+								"description": "Get details of a specific product"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Wholesaler Products (My Products)",
+					"item": [
+						{
+							"name": "List My Products",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/products/my-products/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "products", "my-products", ""]
+								},
+								"description": "Get all products owned by the authenticated wholesaler"
+							},
+							"response": []
+						},
+						{
+							"name": "Create Product",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"category\": 1,\n    \"name\": \"Premium Basmati Rice\",\n    \"slug\": \"premium-basmati-rice\",\n    \"description\": \"High quality basmati rice imported from India\",\n    \"sku\": \"RICE-BSM-001\",\n    \"unit_price\": \"250.00\",\n    \"bulk_price\": \"220.00\",\n    \"bulk_quantity\": 10,\n    \"unit_of_measure\": \"kg\",\n    \"minimum_order_quantity\": 5,\n    \"stock_quantity\": 100,\n    \"low_stock_threshold\": 10\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/products/my-products/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "products", "my-products", ""]
+								},
+								"description": "Create a new product (Wholesaler only)"
+							},
+							"response": []
+						},
+						{
+							"name": "Get My Product Detail",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/products/my-products/:id/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "products", "my-products", ":id", ""],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Product ID"
+										}
+									]
+								},
+								"description": "Get details of a specific product owned by the wholesaler"
+							},
+							"response": []
+						},
+						{
+							"name": "Update My Product",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"category\": 1,\n    \"name\": \"Premium Basmati Rice - Updated\",\n    \"slug\": \"premium-basmati-rice\",\n    \"description\": \"High quality basmati rice imported from India - Updated description\",\n    \"sku\": \"RICE-BSM-001\",\n    \"unit_price\": \"260.00\",\n    \"bulk_price\": \"230.00\",\n    \"bulk_quantity\": 10,\n    \"unit_of_measure\": \"kg\",\n    \"minimum_order_quantity\": 5,\n    \"stock_quantity\": 150,\n    \"low_stock_threshold\": 15\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/products/my-products/:id/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "products", "my-products", ":id", ""],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Product ID"
+										}
+									]
+								},
+								"description": "Update an existing product (Wholesaler only)"
+							},
+							"response": []
+						},
+						{
+							"name": "Partial Update My Product",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"unit_price\": \"270.00\",\n    \"stock_quantity\": 200\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/products/my-products/:id/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "products", "my-products", ":id", ""],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Product ID"
+										}
+									]
+								},
+								"description": "Partially update a product (Wholesaler only)"
+							},
+							"response": []
+						},
+						{
+							"name": "Delete My Product",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/products/my-products/:id/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "products", "my-products", ":id", ""],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Product ID"
+										}
+									]
+								},
+								"description": "Delete a product (Wholesaler only)"
+							},
+							"response": []
+						},
+						{
+							"name": "Upload Product Image",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "image",
+											"type": "file",
+											"src": "",
+											"description": "Product image file"
+										},
+										{
+											"key": "is_primary",
+											"value": "true",
+											"type": "text",
+											"description": "Set as primary image"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/products/my-products/:product_id/images/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "products", "my-products", ":product_id", "images", ""],
+									"variable": [
+										{
+											"key": "product_id",
+											"value": "1",
+											"description": "Product ID"
+										}
+									]
+								},
+								"description": "Upload an image for a product (Wholesaler only)"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Orders",
+			"item": [
+				{
+					"name": "Cart",
+					"item": [
+						{
+							"name": "Get Cart",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/orders/cart/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "orders", "cart", ""]
+								},
+								"description": "Get the current user's shopping cart"
+							},
+							"response": []
+						},
+						{
+							"name": "Add Item to Cart",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"product_id\": 1,\n    \"quantity\": 5\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/orders/cart/items/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "orders", "cart", "items", ""]
+								},
+								"description": "Add a product to the shopping cart"
+							},
+							"response": []
+						},
+						{
+							"name": "Update Cart Item",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"quantity\": 10\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/orders/cart/items/:id/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "orders", "cart", "items", ":id", ""],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Cart Item ID"
+										}
+									]
+								},
+								"description": "Update quantity of a cart item"
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Cart Item",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/orders/cart/items/:id/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "orders", "cart", "items", ":id", ""],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Cart Item ID"
+										}
+									]
+								},
+								"description": "Remove an item from the cart"
+							},
+							"response": []
+						},
+						{
+							"name": "Clear Cart",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/orders/cart/clear/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "orders", "cart", "clear", ""]
+								},
+								"description": "Remove all items from the cart"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Checkout & Orders",
+					"item": [
+						{
+							"name": "Checkout",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"delivery_address\": \"123 Kimathi Street, CBD\",\n    \"delivery_city\": \"Nairobi\",\n    \"delivery_notes\": \"Please call before delivery\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/orders/checkout/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "orders", "checkout", ""]
+								},
+								"description": "Process checkout and create order(s) from cart items"
+							},
+							"response": []
+						},
+						{
+							"name": "List My Orders (Retailer)",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/orders/my-orders/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "orders", "my-orders", ""]
+								},
+								"description": "Get all orders placed by the retailer"
+							},
+							"response": []
+						},
+						{
+							"name": "List Received Orders (Wholesaler)",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/orders/received-orders/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "orders", "received-orders", ""]
+								},
+								"description": "Get all orders received by the wholesaler"
+							},
+							"response": []
+						},
+						{
+							"name": "Get Order Detail",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/orders/:id/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "orders", ":id", ""],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Order ID"
+										}
+									]
+								},
+								"description": "Get details of a specific order"
+							},
+							"response": []
+						},
+						{
+							"name": "Update Order Status",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"status\": \"confirmed\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/v1/orders/:id/status/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "orders", ":id", "status", ""],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Order ID"
+										}
+									]
+								},
+								"description": "Update order status (Wholesaler only). Statuses: pending, confirmed, processing, shipped, delivered, cancelled"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Payments",
+			"item": [
+				{
+					"name": "Initiate M-Pesa Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"order_id\": 1,\n    \"phone_number\": \"254712345678\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/payments/mpesa/initiate/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "payments", "mpesa", "initiate", ""]
+						},
+						"description": "Initiate M-Pesa STK Push payment for an order"
+					},
+					"response": []
+				},
+				{
+					"name": "M-Pesa Callback (Webhook)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"Body\": {\n        \"stkCallback\": {\n            \"MerchantRequestID\": \"xxxxx\",\n            \"CheckoutRequestID\": \"xxxxx\",\n            \"ResultCode\": 0,\n            \"ResultDesc\": \"The service request is processed successfully.\",\n            \"CallbackMetadata\": {\n                \"Item\": [\n                    {\"Name\": \"Amount\", \"Value\": 1000},\n                    {\"Name\": \"MpesaReceiptNumber\", \"Value\": \"XXX123XXX\"},\n                    {\"Name\": \"TransactionDate\", \"Value\": 20231225120000},\n                    {\"Name\": \"PhoneNumber\", \"Value\": 254712345678}\n                ]\n            }\n        }\n    }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/payments/mpesa/callback/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "payments", "mpesa", "callback", ""]
+						},
+						"description": "M-Pesa callback endpoint (called by Safaricom)"
+					},
+					"response": []
+				},
+				{
+					"name": "List Payments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/payments/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "payments", ""]
+						},
+						"description": "Get all payments for the authenticated user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Payment Detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/payments/:id/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "payments", ":id", ""],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Payment ID"
+								}
+							]
+						},
+						"description": "Get details of a specific payment"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Delivery",
+			"item": [
+				{
+					"name": "List Deliveries",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/delivery/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "delivery", ""]
+						},
+						"description": "Get all deliveries"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Delivery",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"order\": 1,\n    \"driver_name\": \"John Doe\",\n    \"driver_phone\": \"+254712345678\",\n    \"vehicle_number\": \"KAA 123A\",\n    \"status\": \"pending\",\n    \"estimated_delivery_time\": \"2025-12-26T10:00:00Z\",\n    \"notes\": \"Handle with care\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/delivery/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "delivery", ""]
+						},
+						"description": "Create a new delivery record for an order"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Delivery Detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/delivery/:id/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "delivery", ":id", ""],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Delivery ID"
+								}
+							]
+						},
+						"description": "Get details of a specific delivery"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Delivery",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"order\": 1,\n    \"driver_name\": \"John Doe\",\n    \"driver_phone\": \"+254712345678\",\n    \"vehicle_number\": \"KAA 123A\",\n    \"status\": \"in_transit\",\n    \"estimated_delivery_time\": \"2025-12-26T10:00:00Z\",\n    \"notes\": \"On the way\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/delivery/:id/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "delivery", ":id", ""],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Delivery ID"
+								}
+							]
+						},
+						"description": "Update a delivery record"
+					},
+					"response": []
+				},
+				{
+					"name": "Partial Update Delivery",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"delivered\",\n    \"actual_delivery_time\": \"2025-12-26T09:30:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/delivery/:id/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "delivery", ":id", ""],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Delivery ID"
+								}
+							]
+						},
+						"description": "Partially update a delivery record"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Delivery",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/delivery/:id/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "delivery", ":id", ""],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Delivery ID"
+								}
+							]
+						},
+						"description": "Delete a delivery record"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "List Notifications",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/notifications/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "notifications", ""]
+						},
+						"description": "Get all notifications for the authenticated user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Notification Detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/notifications/:id/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "notifications", ":id", ""],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Notification ID"
+								}
+							]
+						},
+						"description": "Get details of a specific notification"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Analytics",
+			"item": [
+				{
+					"name": "Get Analytics Overview",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/analytics/overview/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "analytics", "overview", ""]
+						},
+						"description": "Get analytics overview (sales, orders, etc.)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "API Documentation",
+			"item": [
+				{
+					"name": "Get OpenAPI Schema",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/schema/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "schema", ""]
+						},
+						"description": "Get the OpenAPI schema for the API"
+					},
+					"response": []
+				},
+				{
+					"name": "Swagger UI Documentation",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/docs/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "docs", ""]
+						},
+						"description": "Open Swagger UI documentation (open in browser)"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
