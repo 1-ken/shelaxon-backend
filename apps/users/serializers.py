@@ -148,3 +148,38 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             "access": str(refresh.access_token),
             "user": UserSerializer(user).data,
         }
+
+
+class AdminPasswordResetSerializer(serializers.Serializer):
+    """Serializer for admin to reset user password"""
+    user_id = serializers.IntegerField(help_text="ID of the user whose password will be reset")
+    new_password = serializers.CharField(
+        required=False, 
+        allow_blank=True,
+        help_text="New password (optional). If not provided, default password 'Reset@123' will be used"
+    )
+    
+    def validate_user_id(self, value):
+        try:
+            User.objects.get(id=value)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("User not found.")
+        return value
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """Serializer for users to change their own password"""
+    old_password = serializers.CharField(required=True, help_text="Current password")
+    new_password = serializers.CharField(required=True, validators=[validate_password], help_text="New password")
+    confirm_password = serializers.CharField(required=True, help_text="Confirm new password")
+    
+    def validate_old_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError("Current password is incorrect.")
+        return value
+    
+    def validate(self, attrs):
+        if attrs['new_password'] != attrs['confirm_password']:
+            raise serializers.ValidationError({"confirm_password": "New passwords don't match."})
+        return attrs

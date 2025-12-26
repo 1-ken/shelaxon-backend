@@ -8,13 +8,14 @@ This document provides comprehensive test cases for all API endpoints in the Ret
 2. [Health Check Tests](#health-check-tests)
 3. [Authentication Tests](#authentication-tests)
 4. [User Management Tests](#user-management-tests)
-5. [Product Management Tests](#product-management-tests)
-6. [Order Management Tests](#order-management-tests)
-7. [Payment Tests](#payment-tests)
-8. [Delivery Tests](#delivery-tests)
-9. [Notification Tests](#notification-tests)
-10. [Analytics Tests](#analytics-tests)
-11. [End-to-End Test Scenarios](#end-to-end-test-scenarios)
+5. [Admin User Management Tests](#admin-user-management-tests)
+6. [Product Management Tests](#product-management-tests)
+7. [Order Management Tests](#order-management-tests)
+8. [Payment Tests](#payment-tests)
+9. [Delivery Tests](#delivery-tests)
+10. [Notification Tests](#notification-tests)
+11. [Analytics Tests](#analytics-tests)
+12. [End-to-End Test Scenarios](#end-to-end-test-scenarios)
 
 ---
 
@@ -30,9 +31,12 @@ Create the following test users for comprehensive testing:
 
 | Username | User Type | Password | Purpose |
 |----------|-----------|----------|---------|
+| `admin` | admin/staff | `Admin@123` | Super admin for admin operations |
 | `test_retailer` | retailer | `TestPass123!` | Testing retailer flows |
 | `test_wholesaler` | wholesaler | `TestPass123!` | Testing wholesaler flows |
 | `test_retailer2` | retailer | `TestPass123!` | Testing multi-user scenarios |
+
+**Note:** The default password used when admin resets a user's password is `Reset@123`
 
 ---
 
@@ -450,6 +454,266 @@ Authorization: Bearer <access_token>
 | Send request with valid ID | Status code: 200 | ⬜ |
 | Verify wholesaler data returned | Complete profile information | ⬜ |
 | Send request with invalid ID | Status code: 404 | ⬜ |
+
+---
+
+### TC-USER-007: Change Password
+| Field | Value |
+|-------|-------|
+| **Endpoint** | `POST /api/v1/users/password/change/` |
+| **Auth Required** | Yes |
+| **Description** | Change current user's password |
+
+**Request:**
+```json
+{
+    "old_password": "CurrentPassword123!",
+    "new_password": "NewSecurePassword456!",
+    "confirm_password": "NewSecurePassword456!"
+}
+```
+
+**Expected Response (200 OK):**
+```json
+{
+    "message": "Password changed successfully"
+}
+```
+
+| Test Step | Expected Result | Status |
+|-----------|-----------------|--------|
+| Send valid password change request | Status code: 200 | ⬜ |
+| Verify old password is validated | Invalid old password returns 400 | ⬜ |
+| Verify password confirmation | Mismatched passwords return 400 | ⬜ |
+| Verify new password works | Can login with new password | ⬜ |
+
+---
+
+### TC-USER-008: Change Password - Wrong Old Password
+| Field | Value |
+|-------|-------|
+| **Endpoint** | `POST /api/v1/users/password/change/` |
+| **Auth Required** | Yes |
+| **Description** | Change password with incorrect old password |
+
+**Request:**
+```json
+{
+    "old_password": "WrongPassword123!",
+    "new_password": "NewSecurePassword456!",
+    "confirm_password": "NewSecurePassword456!"
+}
+```
+
+| Test Step | Expected Result | Status |
+|-----------|-----------------|--------|
+| Send request with wrong old password | Status code: 400 | ⬜ |
+| Verify error message | "Old password is not correct" | ⬜ |
+
+---
+
+### TC-USER-009: Change Password - Mismatched Confirmation
+| Field | Value |
+|-------|-------|
+| **Endpoint** | `POST /api/v1/users/password/change/` |
+| **Auth Required** | Yes |
+| **Description** | Change password with mismatched confirmation |
+
+**Request:**
+```json
+{
+    "old_password": "CurrentPassword123!",
+    "new_password": "NewSecurePassword456!",
+    "confirm_password": "DifferentPassword789!"
+}
+```
+
+| Test Step | Expected Result | Status |
+|-----------|-----------------|--------|
+| Send request with mismatched passwords | Status code: 400 | ⬜ |
+| Verify error message | "Password fields didn't match" | ⬜ |
+
+---
+
+## Admin User Management Tests
+
+### TC-ADMIN-001: Admin Login
+| Field | Value |
+|-------|-------|
+| **Endpoint** | `POST /api/v1/users/login/` |
+| **Auth Required** | No |
+| **Description** | Login as admin user |
+
+**Request:**
+```json
+{
+    "username": "admin",
+    "password": "Admin@123"
+}
+```
+
+**Expected Response (200 OK):**
+```json
+{
+    "access": "<jwt_access_token>",
+    "refresh": "<jwt_refresh_token>"
+}
+```
+
+| Test Step | Expected Result | Status |
+|-----------|-----------------|--------|
+| Login with admin credentials | Status code: 200 | ⬜ |
+| Verify tokens returned | access and refresh tokens present | ⬜ |
+
+---
+
+### TC-ADMIN-002: Admin List All Users
+| Field | Value |
+|-------|-------|
+| **Endpoint** | `GET /api/v1/users/admin/users/` |
+| **Auth Required** | Yes (Admin only) |
+| **Description** | List all users in the system |
+| **Query Parameters** | `user_type` (optional), `is_active` (optional) |
+
+**Expected Response (200 OK):**
+```json
+[
+    {
+        "id": 1,
+        "username": "admin",
+        "user_type": "retailer",
+        "is_staff": true,
+        "is_active": true
+    },
+    {
+        "id": 2,
+        "username": "test_retailer",
+        "user_type": "retailer",
+        "is_staff": false,
+        "is_active": true
+    }
+]
+```
+
+| Test Step | Expected Result | Status |
+|-----------|-----------------|--------|
+| Send request with admin token | Status code: 200 | ⬜ |
+| Verify all users returned | Array of user objects | ⬜ |
+| Filter by user_type | Only filtered users returned | ⬜ |
+| Send request with non-admin token | Status code: 403 | ⬜ |
+
+---
+
+### TC-ADMIN-003: Admin Get User Details
+| Field | Value |
+|-------|-------|
+| **Endpoint** | `GET /api/v1/users/admin/users/:id/` |
+| **Auth Required** | Yes (Admin only) |
+| **Description** | Get details of a specific user |
+
+| Test Step | Expected Result | Status |
+|-----------|-----------------|--------|
+| Send request with valid user ID | Status code: 200 | ⬜ |
+| Verify user details returned | Complete user profile | ⬜ |
+| Send request with invalid ID | Status code: 404 | ⬜ |
+| Send request with non-admin token | Status code: 403 | ⬜ |
+
+---
+
+### TC-ADMIN-004: Admin Reset User Password (Custom)
+| Field | Value |
+|-------|-------|
+| **Endpoint** | `POST /api/v1/users/admin/password-reset/` |
+| **Auth Required** | Yes (Admin only) |
+| **Description** | Reset a user's password to a custom password |
+
+**Request:**
+```json
+{
+    "user_id": 2,
+    "new_password": "CustomPassword123!"
+}
+```
+
+**Expected Response (200 OK):**
+```json
+{
+    "message": "Password reset successfully for user: test_retailer",
+    "new_password": "CustomPassword123!"
+}
+```
+
+| Test Step | Expected Result | Status |
+|-----------|-----------------|--------|
+| Send reset with custom password | Status code: 200 | ⬜ |
+| Verify success message | Contains username and new password | ⬜ |
+| Verify user can login | User can login with new password | ⬜ |
+| Send request with non-admin token | Status code: 403 | ⬜ |
+
+---
+
+### TC-ADMIN-005: Admin Reset User Password (Default)
+| Field | Value |
+|-------|-------|
+| **Endpoint** | `POST /api/v1/users/admin/password-reset/` |
+| **Auth Required** | Yes (Admin only) |
+| **Description** | Reset a user's password to default password |
+
+**Request:**
+```json
+{
+    "user_id": 2
+}
+```
+
+**Expected Response (200 OK):**
+```json
+{
+    "message": "Password reset successfully for user: test_retailer",
+    "new_password": "Reset@123"
+}
+```
+
+| Test Step | Expected Result | Status |
+|-----------|-----------------|--------|
+| Send reset without new_password | Status code: 200 | ⬜ |
+| Verify default password used | new_password is "Reset@123" | ⬜ |
+| Verify user can login | User can login with "Reset@123" | ⬜ |
+
+---
+
+### TC-ADMIN-006: Admin Reset Password - Invalid User
+| Field | Value |
+|-------|-------|
+| **Endpoint** | `POST /api/v1/users/admin/password-reset/` |
+| **Auth Required** | Yes (Admin only) |
+| **Description** | Reset password for non-existent user |
+
+**Request:**
+```json
+{
+    "user_id": 99999
+}
+```
+
+| Test Step | Expected Result | Status |
+|-----------|-----------------|--------|
+| Send request with invalid user_id | Status code: 404 | ⬜ |
+| Verify error message | "User not found" | ⬜ |
+
+---
+
+### TC-ADMIN-007: Admin Reset Password - Non-Admin Access
+| Field | Value |
+|-------|-------|
+| **Endpoint** | `POST /api/v1/users/admin/password-reset/` |
+| **Auth Required** | Yes (Admin only) |
+| **Description** | Non-admin user tries to reset password |
+
+| Test Step | Expected Result | Status |
+|-----------|-----------------|--------|
+| Send request with regular user token | Status code: 403 | ⬜ |
+| Verify error message | Permission denied | ⬜ |
 
 ---
 

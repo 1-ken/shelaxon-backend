@@ -138,6 +138,49 @@
 					"response": []
 				},
 				{
+					"name": "Login (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('access_token', jsonData.access);",
+									"    pm.collectionVariables.set('refresh_token', jsonData.refresh);",
+									"    pm.collectionVariables.set('admin_access_token', jsonData.access);",
+									"    console.log('Admin tokens saved successfully');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"admin\",\n    \"password\": \"Admin@123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/login/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "login", ""]
+						},
+						"description": "Login as admin user. Returns JWT access and refresh tokens. Default admin credentials: admin / Admin@123"
+					},
+					"response": []
+				},
+				{
 					"name": "Refresh Token",
 					"event": [
 						{
@@ -221,6 +264,29 @@
 					"response": []
 				},
 				{
+					"name": "Change Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"old_password\": \"CurrentPassword123!\",\n    \"new_password\": \"NewSecurePassword456!\",\n    \"confirm_password\": \"NewSecurePassword456!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/password/change/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "password", "change", ""]
+						},
+						"description": "Change your own password. Requires current password verification."
+					},
+					"response": []
+				},
+				{
 					"name": "List Wholesalers",
 					"request": {
 						"method": "GET",
@@ -266,6 +332,101 @@
 							]
 						},
 						"description": "Get details of a specific wholesaler by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Admin - List All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/admin/users/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "admin", "users", ""],
+							"query": [
+								{
+									"key": "user_type",
+									"value": "retailer",
+									"description": "Filter by user type: retailer, wholesaler",
+									"disabled": true
+								},
+								{
+									"key": "is_active",
+									"value": "true",
+									"description": "Filter by active status",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Admin only: List all users in the system. Requires admin/staff authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Admin - Get User Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/admin/users/:id/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "admin", "users", ":id", ""],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "User ID"
+								}
+							]
+						},
+						"description": "Admin only: Get details of a specific user by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Admin - Reset User Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": 2,\n    \"new_password\": \"CustomPassword123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/admin/password-reset/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "admin", "password-reset", ""]
+						},
+						"description": "Admin only: Reset a user's password. If new_password is not provided, defaults to 'Reset@123'. Requires admin/staff authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Admin - Reset User Password (Default)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user_id\": 2\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/users/admin/password-reset/",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "users", "admin", "password-reset", ""]
+						},
+						"description": "Admin only: Reset a user's password to the default password 'Reset@123'. Requires admin/staff authentication."
 					},
 					"response": []
 				}

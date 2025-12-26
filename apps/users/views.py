@@ -4,9 +4,11 @@ User Views
 
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from drf_spectacular.utils import extend_schema, OpenApiExample
 from .serializers import (
     UserRegistrationSerializer,
@@ -14,10 +16,15 @@ from .serializers import (
     WholesalerProfileSerializer,
     ProfileUpdateSerializer,
     CustomTokenObtainPairSerializer,
+    AdminPasswordResetSerializer,
+    ChangePasswordSerializer,
 )
 from .models import WholesalerProfile, RetailerProfile
 
 User = get_user_model()
+
+# Default password for admin reset
+DEFAULT_RESET_PASSWORD = getattr(settings, 'DEFAULT_RESET_PASSWORD', 'Reset@123')
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -158,4 +165,113 @@ class ProfileUpdateView(generics.GenericAPIView):
         return Response({
             'message': 'Profile updated successfully',
             'user': UserSerializer(instance).data
+        })
+
+
+class IsAdminUser(permissions.BasePermission):
+    """Custom permission to only allow admin users"""
+    def has_permission(self, request, view):
+        return request.user and (request.user.is_staff or request.user.is_superuser)
+
+
+@extend_schema(
+    tags=['Admin - Password Management'],
+    summary='Reset user password (Admin only)',
+    description='Allows admin/superuser to reset any user\'s password. If no new_password is provided, the default password "Reset@123" will be used.',
+    request=AdminPasswordResetSerializer,
+    examples=[
+        OpenApiExample(
+            'Reset with default password',
+            value={'user_id': 1},
+            request_only=True,
+            description='Reset to default password (Reset@123)'
+        ),
+        OpenApiExample(
+            'Reset with custom password',
+            value={'user_id': 1, 'new_password': 'NewSecurePass123!'},
+            request_only=True,
+            description='Reset to a custom password'
+        )
+    ]
+)
+class AdminPasswordResetView(APIView):
+    """Admin endpoint to reset user passwords"""
+    permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+    serializer_class = AdminPasswordResetSerializer
+
+    def post(self, request):
+        serializer = AdminPasswordResetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        user_id = serializer.validated_data['user_id']
+        new_password = serializer.validated_data.get('new_password') or DEFAULT_RESET_PASSWORD
+        
+        user = User.objects.get(id=user_id)
+        user.set_password(new_password)
+        user.save()
+        
+        return Response({
+            'message': f'Password for user "{user.username}" has been reset successfully.',
+            'user_id': user.id,
+            'username': user.username,
+            'default_password_used': not serializer.validated_data.get('new_password')
         }, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=['Profile'],
+    summary='Change own password',
+    description='Allows authenticated users to change their own password.',
+    request=ChangePasswordSerializer,
+    examples=[
+        OpenApiExample(
+            'Change password',
+            value={
+                'old_password': 'CurrentPass123!',
+                'new_password': 'NewSecurePass456!',
+                'confirm_password': 'NewSecurePass456!'
+            },
+            request_only=True
+        )
+    ]
+)
+class ChangePasswordView(APIView):
+    """Endpoint for users to change their own password"""
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ChangePasswordSerializer
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        
+        user = request.user
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+        
+        return Response({
+            'message': 'Password changed successfully. Please login with your new password.'
+        }, status=status.HTTP_200_OK)
+
+
+@extend_schema(
+    tags=['Admin - User Management'],
+    summary='List all users (Admin only)',
+    description='Allows admin/superuser to view all users in the system.'
+)
+class AdminUserListView(generics.ListAPIView):
+    """Admin endpoint to list all users"""
+    queryset = User.objects.all().order_by('-created_at')
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+
+
+@extend_schema(
+    tags=['Admin - User Management'],
+    summary='Get user details (Admin only)',
+    description='Allows admin/superuser to view any user\'s details.'
+)
+class AdminUserDetailView(generics.RetrieveAPIView):
+    """Admin endpoint to get user details"""
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminUser]

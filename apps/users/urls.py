@@ -10,7 +10,11 @@ from .views import (
     UserProfileView,
     WholesalerListView,
     WholesalerDetailView,
-    ProfileUpdateView
+    ProfileUpdateView,
+    AdminPasswordResetView,
+    ChangePasswordView,
+    AdminUserListView,
+    AdminUserDetailView,
 )
 
 urlpatterns = [
@@ -22,8 +26,14 @@ urlpatterns = [
     # Profile
     path('profile/', UserProfileView.as_view(), name='user-profile'),
     path('profile/update/', ProfileUpdateView.as_view(), name='profile-update'),
+    path('password/change/', ChangePasswordView.as_view(), name='change-password'),
     
     # Wholesalers
     path('wholesalers/', WholesalerListView.as_view(), name='wholesaler-list'),
     path('wholesalers/<int:pk>/', WholesalerDetailView.as_view(), name='wholesaler-detail'),
+    
+    # Admin endpoints
+    path('admin/users/', AdminUserListView.as_view(), name='admin-user-list'),
+    path('admin/users/<int:pk>/', AdminUserDetailView.as_view(), name='admin-user-detail'),
+    path('admin/password-reset/', AdminPasswordResetView.as_view(), name='admin-password-reset'),
 ]
