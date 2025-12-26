@@ -426,12 +426,15 @@ Authorization: Bearer <access_token>
 | **Endpoint** | `GET /api/v1/users/wholesalers/` |
 | **Auth Required** | Yes |
 | **Description** | Get list of all wholesalers |
+| **Query Parameters** | `city` (optional), `verified` (optional) |
 
 | Test Step | Expected Result | Status |
 |-----------|-----------------|--------|
 | Send authenticated request | Status code: 200 | ⬜ |
 | Verify response is array | Array of wholesaler objects | ⬜ |
 | Verify only wholesalers returned | No retailers in list | ⬜ |
+| Filter by city `?city=Nairobi` | Only Nairobi wholesalers | ⬜ |
+| Filter by verified `?verified=true` | Only verified wholesalers | ⬜ |
 
 ---
 
@@ -457,7 +460,8 @@ Authorization: Bearer <access_token>
 |-------|-------|
 | **Endpoint** | `GET /api/v1/products/categories/` |
 | **Auth Required** | No |
-| **Description** | Get all product categories |
+| **Description** | Get product categories (root categories with nested subcategories by default) |
+| **Query Parameters** | `all` (optional) - set to `true` to get all categories flat |
 
 **Expected Response (200 OK):**
 ```json
@@ -469,7 +473,17 @@ Authorization: Bearer <access_token>
         "description": "Rice, wheat, maize...",
         "image": null,
         "parent": null,
-        "subcategories": []
+        "subcategories": [
+            {
+                "id": 2,
+                "name": "Rice",
+                "slug": "rice",
+                "description": "All types of rice",
+                "image": null,
+                "parent": 1,
+                "subcategories": []
+            }
+        ]
     }
 ]
 ```
@@ -477,8 +491,9 @@ Authorization: Bearer <access_token>
 | Test Step | Expected Result | Status |
 |-----------|-----------------|--------|
 | Send request | Status code: 200 | ⬜ |
-| Verify categories returned | Array with category objects | ⬜ |
-| Verify subcategories nested | Subcategories in parent | ⬜ |
+| Verify root categories returned | Array with root category objects (parent=null) | ⬜ |
+| Verify subcategories nested | Subcategories in parent's subcategories array | ⬜ |
+| Send request with `?all=true` | All categories returned flat | ⬜ |
 
 ---
 

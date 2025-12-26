@@ -92,10 +92,13 @@ class WholesalerListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        queryset = WholesalerProfile.objects.filter(user__is_verified=True)
+        queryset = WholesalerProfile.objects.select_related('user').all()
         city = self.request.query_params.get('city')
+        verified = self.request.query_params.get('verified')
         if city:
             queryset = queryset.filter(user__city__icontains=city)
+        if verified and verified.lower() == 'true':
+            queryset = queryset.filter(user__is_verified=True)
         return queryset
 
 

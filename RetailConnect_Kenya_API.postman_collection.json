@@ -228,9 +228,23 @@
 						"url": {
 							"raw": "{{base_url}}/api/v1/users/wholesalers/",
 							"host": ["{{base_url}}"],
-							"path": ["api", "v1", "users", "wholesalers", ""]
+							"path": ["api", "v1", "users", "wholesalers", ""],
+							"query": [
+								{
+									"key": "city",
+									"value": "Nairobi",
+									"description": "Filter by city (optional)",
+									"disabled": true
+								},
+								{
+									"key": "verified",
+									"value": "true",
+									"description": "Filter only verified wholesalers (optional)",
+									"disabled": true
+								}
+							]
 						},
-						"description": "Get a list of all registered wholesalers"
+						"description": "Get a list of all registered wholesalers. Optional filters: city, verified"
 					},
 					"response": []
 				},
@@ -271,9 +285,17 @@
 								"url": {
 									"raw": "{{base_url}}/api/v1/products/categories/",
 									"host": ["{{base_url}}"],
-									"path": ["api", "v1", "products", "categories", ""]
+									"path": ["api", "v1", "products", "categories", ""],
+									"query": [
+										{
+											"key": "all",
+											"value": "true",
+											"description": "Return all categories flat (including subcategories). Default returns only root categories with nested subcategories.",
+											"disabled": true
+										}
+									]
 								},
-								"description": "Get all product categories"
+								"description": "Get product categories. By default returns root categories with nested subcategories. Use ?all=true to get all categories flat."
 							},
 							"response": []
 						}

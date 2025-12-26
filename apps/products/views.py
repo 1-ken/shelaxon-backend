@@ -13,9 +13,17 @@ from .serializers import (
 
 
 class CategoryListView(generics.ListAPIView):
-    queryset = Category.objects.filter(is_active=True)
     serializer_class = CategorySerializer
     permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        # Return root categories (no parent) with their subcategories nested
+        # Or return all categories if 'all' query param is provided
+        show_all = self.request.query_params.get('all')
+        if show_all and show_all.lower() == 'true':
+            return Category.objects.filter(is_active=True)
+        # By default, return only root categories (parent=None)
+        return Category.objects.filter(is_active=True, parent__isnull=True)
 
 
 class ProductListView(generics.ListAPIView):
