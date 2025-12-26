@@ -10,6 +10,7 @@ from .serializers import (
     CategorySerializer,
     ProductImageSerializer,
 )
+from .filters import ProductFilter
 
 
 class CategoryListView(generics.ListAPIView):
@@ -31,7 +32,7 @@ class ProductListView(generics.ListAPIView):
     serializer_class = ProductSerializer
     permission_classes = [permissions.AllowAny]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['category', 'wholesaler', 'stock_status']
+    filterset_class = ProductFilter
     search_fields = ['name', 'description', 'sku']
     ordering_fields = ['unit_price', 'created_at', 'name']
 

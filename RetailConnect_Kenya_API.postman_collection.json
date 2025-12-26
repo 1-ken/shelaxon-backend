@@ -324,33 +324,48 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{base_url}}/api/v1/products/?category=1&search=rice&min_price=100&max_price=5000",
+									"raw": "{{base_url}}/api/v1/products/?category=2",
 									"host": ["{{base_url}}"],
 									"path": ["api", "v1", "products", ""],
 									"query": [
 										{
 											"key": "category",
-											"value": "1",
-											"description": "Filter by category ID"
+											"value": "2",
+											"description": "Filter by category ID (includes all subcategories)"
 										},
 										{
 											"key": "search",
 											"value": "rice",
-											"description": "Search by product name"
+											"description": "Search by product name",
+											"disabled": true
 										},
 										{
 											"key": "min_price",
 											"value": "100",
-											"description": "Minimum price filter"
+											"description": "Minimum price filter",
+											"disabled": true
 										},
 										{
 											"key": "max_price",
 											"value": "5000",
-											"description": "Maximum price filter"
+											"description": "Maximum price filter",
+											"disabled": true
+										},
+										{
+											"key": "wholesaler",
+											"value": "1",
+											"description": "Filter by wholesaler ID",
+											"disabled": true
+										},
+										{
+											"key": "stock_status",
+											"value": "in_stock",
+											"description": "Filter by stock status (in_stock, low_stock, out_of_stock)",
+											"disabled": true
 										}
 									]
 								},
-								"description": "Get products with optional filters"
+								"description": "Get products with optional filters. Category filter includes all subcategories."
 							},
 							"response": []
 						},
