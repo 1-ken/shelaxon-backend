@@ -63,6 +63,20 @@ class WholesalerProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return Product.objects.filter(wholesaler=self.request.user)
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        product_name = instance.name
+        product_id = instance.id
+        self.perform_destroy(instance)
+        return Response(
+            {
+                'status': 'success',
+                'message': f'Product "{product_name}" has been deleted successfully.'
+                
+            },
+            status=status.HTTP_200_OK
+        )
+
 
 class ProductImageUploadView(generics.CreateAPIView):
     serializer_class = ProductImageSerializer

@@ -49,6 +49,14 @@ class ProductCreateSerializer(serializers.ModelSerializer):
             'minimum_order_quantity', 'stock_quantity', 'low_stock_threshold'
         ]
 
+    def validate_sku(self, value):
+        """Check if SKU already exists"""
+        if Product.objects.filter(sku=value).exists():
+            raise serializers.ValidationError(
+                f"A product with SKU '{value}' already exists. Please use a unique SKU."
+            )
+        return value
+
     def create(self, validated_data):
         validated_data['wholesaler'] = self.context['request'].user
         return super().create(validated_data)
