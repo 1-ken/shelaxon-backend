@@ -290,7 +290,6 @@ class CheckoutView(APIView):
         
         orders = []
         order_items_to_create = []
-        products_to_update = []
         
         # Create order for each wholesaler
         for wholesaler_id, data in items_by_wholesaler.items():
@@ -325,20 +324,11 @@ class CheckoutView(APIView):
                     unit_price=unit_price,
                     total_price=cart_item.quantity * unit_price
                 ))
-                
-                # Update stock
-                product.stock_quantity -= cart_item.quantity
-                products_to_update.append(product)
             
             orders.append(order)
         
         # Bulk create order items (single query instead of multiple)
         OrderItem.objects.bulk_create(order_items_to_create)
-        
-        # Bulk update product stock (optimized)
-        from apps.products.models import Product
-        for product in products_to_update:
-            product.save()  # Triggers stock_status update in model
         
         # Clear cart
         cart.delete()

@@ -111,6 +111,13 @@ class MpesaCallbackView(APIView):
             order.status = Order.OrderStatus.CONFIRMED
             order.save()
             
+            # Reduce stock for all items in the order
+            for order_item in order.items.select_related('product').all():
+                product = order_item.product
+                if product:
+                    product.stock_quantity -= order_item.quantity
+                    product.save()  # Triggers stock_status update in model
+            
             # TODO: Send notification to retailer and wholesaler
             
         else:
