@@ -795,7 +795,7 @@
 									"host": ["{{base_url}}"],
 									"path": ["api", "v1", "orders", "cart", ""]
 								},
-								"description": "Get the current user's shopping cart"
+								"description": "Get the current user's shopping cart with all items, individual prices, and total. Retailers only."
 							},
 							"response": []
 						},
@@ -818,12 +818,12 @@
 									"host": ["{{base_url}}"],
 									"path": ["api", "v1", "orders", "cart", "items", ""]
 								},
-								"description": "Add a product to the shopping cart"
+								"description": "Add a product to the shopping cart. Validates: product exists, stock availability, minimum order quantity. If item already in cart, quantity is added to existing."
 							},
 							"response": []
 						},
 						{
-							"name": "Update Cart Item",
+							"name": "Update Cart Item Quantity",
 							"request": {
 								"method": "PUT",
 								"header": [
@@ -848,7 +848,7 @@
 										}
 									]
 								},
-								"description": "Update quantity of a cart item"
+								"description": "Update the quantity of a cart item. Validates stock availability and minimum order quantity. Use DELETE to remove item."
 							},
 							"response": []
 						},
@@ -869,7 +869,7 @@
 										}
 									]
 								},
-								"description": "Remove an item from the cart"
+								"description": "Remove an item from the cart. Returns success message with product name."
 							},
 							"response": []
 						},
@@ -883,7 +883,7 @@
 									"host": ["{{base_url}}"],
 									"path": ["api", "v1", "orders", "cart", "clear", ""]
 								},
-								"description": "Remove all items from the cart"
+								"description": "Remove all items from the cart. Returns count of items removed."
 							},
 							"response": []
 						}

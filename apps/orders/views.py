@@ -37,35 +37,182 @@ class CartView(generics.RetrieveAPIView):
         return cart
 
 
-class CartItemView(generics.CreateAPIView):
+class CartItemView(APIView):
     """Add item to cart"""
-    serializer_class = CartItemSerializer
     permission_classes = [permissions.IsAuthenticated, IsRetailer]
 
-    def perform_create(self, serializer):
-        cart, _ = Cart.objects.get_or_create(retailer=self.request.user)
-        product_id = self.request.data.get('product_id')
-        quantity = int(self.request.data.get('quantity', 1))
+    def post(self, request):
+        from apps.products.models import Product
+        
+        product_id = request.data.get('product_id')
+        quantity = int(request.data.get('quantity', 1))
+        
+        # Validate product exists and is active
+        try:
+            product = Product.objects.get(id=product_id, is_active=True)
+        except Product.DoesNotExist:
+            return Response(
+                {'error': 'Product not found or is not available'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Check stock availability
+        if product.stock_quantity < quantity:
+            return Response(
+                {
+                    'error': f'Insufficient stock. Only {product.stock_quantity} available.',
+                    'available_stock': product.stock_quantity
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Check minimum order quantity
+        if quantity < product.minimum_order_quantity:
+            return Response(
+                {
+                    'error': f'Minimum order quantity is {product.minimum_order_quantity}',
+                    'minimum_order_quantity': product.minimum_order_quantity
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        cart, _ = Cart.objects.get_or_create(retailer=request.user)
         
         # Check if item already in cart
         cart_item, created = CartItem.objects.get_or_create(
             cart=cart,
-            product_id=product_id,
+            product=product,
             defaults={'quantity': quantity}
         )
         
         if not created:
-            cart_item.quantity += quantity
+            new_quantity = cart_item.quantity + quantity
+            # Check if updated quantity exceeds stock
+            if new_quantity > product.stock_quantity:
+                return Response(
+                    {
+                        'error': f'Cannot add {quantity} more. Total would exceed available stock ({product.stock_quantity}).',
+                        'current_quantity_in_cart': cart_item.quantity,
+                        'available_stock': product.stock_quantity
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            cart_item.quantity = new_quantity
             cart_item.save()
+            message = f'Updated quantity of "{product.name}" to {cart_item.quantity}'
+        else:
+            message = f'Added "{product.name}" to cart'
+        
+        return Response(
+            {
+                'status': 'success',
+                'message': message,
+                'cart_item': {
+                    'id': cart_item.id,
+                    'product_id': product.id,
+                    'product_name': product.name,
+                    'quantity': cart_item.quantity,
+                    'unit_price': str(product.unit_price),
+                    'total_price': str(cart_item.total_price)
+                }
+            },
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        )
 
 
-class CartItemUpdateView(generics.UpdateAPIView, generics.DestroyAPIView):
+class CartItemUpdateView(APIView):
     """Update or remove cart item"""
-    serializer_class = CartItemSerializer
     permission_classes = [permissions.IsAuthenticated, IsRetailer]
 
-    def get_queryset(self):
-        return CartItem.objects.filter(cart__retailer=self.request.user)
+    def get_cart_item(self, pk, user):
+        try:
+            return CartItem.objects.get(pk=pk, cart__retailer=user)
+        except CartItem.DoesNotExist:
+            return None
+
+    def put(self, request, pk):
+        """Update cart item quantity"""
+        from apps.products.models import Product
+        
+        cart_item = self.get_cart_item(pk, request.user)
+        if not cart_item:
+            return Response(
+                {'error': 'Cart item not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        quantity = request.data.get('quantity')
+        if quantity is None:
+            return Response(
+                {'error': 'Quantity is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        quantity = int(quantity)
+        product = cart_item.product
+        
+        if quantity <= 0:
+            return Response(
+                {'error': 'Quantity must be greater than 0. Use DELETE to remove item.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Check stock availability
+        if quantity > product.stock_quantity:
+            return Response(
+                {
+                    'error': f'Insufficient stock. Only {product.stock_quantity} available.',
+                    'available_stock': product.stock_quantity
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Check minimum order quantity
+        if quantity < product.minimum_order_quantity:
+            return Response(
+                {
+                    'error': f'Minimum order quantity is {product.minimum_order_quantity}',
+                    'minimum_order_quantity': product.minimum_order_quantity
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        cart_item.quantity = quantity
+        cart_item.save()
+        
+        return Response({
+            'status': 'success',
+            'message': f'Updated quantity of "{product.name}" to {quantity}',
+            'cart_item': {
+                'id': cart_item.id,
+                'product_id': product.id,
+                'product_name': product.name,
+                'quantity': cart_item.quantity,
+                'unit_price': str(product.unit_price),
+                'total_price': str(cart_item.total_price)
+            }
+        })
+
+    def patch(self, request, pk):
+        """Partial update - same as PUT for quantity updates"""
+        return self.put(request, pk)
+
+    def delete(self, request, pk):
+        """Remove item from cart"""
+        cart_item = self.get_cart_item(pk, request.user)
+        if not cart_item:
+            return Response(
+                {'error': 'Cart item not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        product_name = cart_item.product.name
+        cart_item.delete()
+        
+        return Response({
+            'status': 'success',
+            'message': f'Removed "{product_name}" from cart'
+        })
 
 
 class ClearCartView(APIView):
@@ -73,8 +220,20 @@ class ClearCartView(APIView):
     permission_classes = [permissions.IsAuthenticated, IsRetailer]
 
     def delete(self, request):
-        Cart.objects.filter(retailer=request.user).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        cart = Cart.objects.filter(retailer=request.user).first()
+        if not cart or not cart.items.exists():
+            return Response(
+                {'message': 'Cart is already empty'},
+                status=status.HTTP_200_OK
+            )
+        
+        items_count = cart.items.count()
+        cart.items.all().delete()
+        
+        return Response({
+            'status': 'success',
+            'message': f'Cleared {items_count} item(s) from cart'
+        })
 
 
 # Order Views
