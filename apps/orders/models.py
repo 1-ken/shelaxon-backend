@@ -14,7 +14,7 @@ class Order(models.Model):
         PENDING = 'pending', 'Pending'
         CONFIRMED = 'confirmed', 'Confirmed'
         PROCESSING = 'processing', 'Processing'
-        SHIPPED = 'shipped', 'Shipped'
+        OUT_FOR_DELIVERY = 'out_for_delivery', 'Out for Delivery'
         DELIVERED = 'delivered', 'Delivered'
         CANCELLED = 'cancelled', 'Cancelled'
         REFUNDED = 'refunded', 'Refunded'

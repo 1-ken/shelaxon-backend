@@ -911,7 +911,7 @@
 									"host": ["{{base_url}}"],
 									"path": ["api", "v1", "orders", "checkout", ""]
 								},
-								"description": "Process checkout and create order(s) from cart items"
+								"description": "Process checkout and create order(s) from cart items. Creates separate orders per wholesaler. Validates stock availability before processing. Returns created orders with items."
 							},
 							"response": []
 						},
@@ -925,7 +925,7 @@
 									"host": ["{{base_url}}"],
 									"path": ["api", "v1", "orders", "my-orders", ""]
 								},
-								"description": "Get all orders placed by the retailer"
+								"description": "Get all orders placed by the retailer. Ordered by most recent first."
 							},
 							"response": []
 						},
@@ -939,7 +939,7 @@
 									"host": ["{{base_url}}"],
 									"path": ["api", "v1", "orders", "received-orders", ""]
 								},
-								"description": "Get all orders received by the wholesaler"
+								"description": "Get all orders received by the wholesaler. Ordered by most recent first."
 							},
 							"response": []
 						},
@@ -960,7 +960,7 @@
 										}
 									]
 								},
-								"description": "Get details of a specific order"
+								"description": "Get details of a specific order including all items. Accessible by both retailer and wholesaler."
 							},
 							"response": []
 						},
@@ -990,7 +990,7 @@
 										}
 									]
 								},
-								"description": "Update order status (Wholesaler only). Statuses: pending, confirmed, processing, shipped, delivered, cancelled"
+								"description": "Update order status (Wholesaler only). Statuses: pending, confirmed, processing, out_for_delivery, delivered, cancelled, refunded. Valid transitions: pending→confirmed/cancelled, confirmed→processing/cancelled, processing→out_for_delivery/cancelled, out_for_delivery→delivered. Final states: delivered, cancelled, refunded."
 							},
 							"response": []
 						}
