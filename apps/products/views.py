@@ -66,13 +66,11 @@ class WholesalerProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         product_name = instance.name
-        product_id = instance.id
         self.perform_destroy(instance)
         return Response(
             {
                 'status': 'success',
                 'message': f'Product "{product_name}" has been deleted successfully.'
-                
             },
             status=status.HTTP_200_OK
         )
@@ -84,6 +82,8 @@ class ProductImageUploadView(generics.CreateAPIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def create(self, request, *args, **kwargs):
+        from .models import ProductImage
+        
         product_id = self.kwargs.get('product_id')
         try:
             product = Product.objects.get(id=product_id, wholesaler=request.user)
@@ -95,5 +95,81 @@ class ProductImageUploadView(generics.CreateAPIView):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        
+        # Handle primary image - only one primary image per product
+        is_primary = serializer.validated_data.get('is_primary', False)
+        if is_primary:
+            # Remove primary status from all other images of this product
+            ProductImage.objects.filter(product=product, is_primary=True).update(is_primary=False)
+        
+        # If this is the first image, make it primary automatically
+        if not product.images.exists():
+            serializer.validated_data['is_primary'] = True
+        
         serializer.save(product=product)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ProductImageDeleteView(generics.DestroyAPIView):
+    """Delete a product image"""
+    serializer_class = ProductImageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        from .models import ProductImage
+        # Only allow deleting images from products owned by the user
+        return ProductImage.objects.filter(product__wholesaler=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        product = instance.product
+        was_primary = instance.is_primary
+        
+        self.perform_destroy(instance)
+        
+        # If deleted image was primary, set another image as primary
+        if was_primary:
+            remaining_image = product.images.first()
+            if remaining_image:
+                remaining_image.is_primary = True
+                remaining_image.save()
+        
+        return Response(
+            {
+                'status': 'success',
+                'message': 'Image deleted successfully.'
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+class ProductImageSetPrimaryView(generics.UpdateAPIView):
+    """Set an image as the primary image for a product"""
+    serializer_class = ProductImageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        from .models import ProductImage
+        return ProductImage.objects.filter(product__wholesaler=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        from .models import ProductImage
+        
+        instance = self.get_object()
+        product = instance.product
+        
+        # Remove primary status from all other images
+        ProductImage.objects.filter(product=product, is_primary=True).update(is_primary=False)
+        
+        # Set this image as primary
+        instance.is_primary = True
+        instance.save()
+        
+        return Response(
+            {
+                'status': 'success',
+                'message': 'Image set as primary successfully.',
+                'image': ProductImageSerializer(instance).data
+            },
+            status=status.HTTP_200_OK
+        )

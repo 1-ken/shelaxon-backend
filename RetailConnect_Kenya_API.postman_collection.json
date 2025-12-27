@@ -713,7 +713,7 @@
 											"key": "is_primary",
 											"value": "true",
 											"type": "text",
-											"description": "Set as primary image"
+											"description": "Set as primary image (only one primary per product)"
 										}
 									]
 								},
@@ -729,7 +729,49 @@
 										}
 									]
 								},
-								"description": "Upload an image for a product (Wholesaler only)"
+								"description": "Upload an image for a product. First image is automatically set as primary. If is_primary=true, removes primary status from other images."
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Product Image",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/products/my-products/images/:id/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "products", "my-products", "images", ":id", ""],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Image ID"
+										}
+									]
+								},
+								"description": "Delete a product image. If deleted image was primary, another image is automatically set as primary."
+							},
+							"response": []
+						},
+						{
+							"name": "Set Image as Primary",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/api/v1/products/my-products/images/:id/set-primary/",
+									"host": ["{{base_url}}"],
+									"path": ["api", "v1", "products", "my-products", "images", ":id", "set-primary", ""],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1",
+											"description": "Image ID"
+										}
+									]
+								},
+								"description": "Set an image as the primary image for a product. Only one image can be primary per product."
 							},
 							"response": []
 						}

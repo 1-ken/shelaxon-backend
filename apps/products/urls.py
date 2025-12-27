@@ -6,6 +6,8 @@ from .views import (
     WholesalerProductListView,
     WholesalerProductDetailView,
     ProductImageUploadView,
+    ProductImageDeleteView,
+    ProductImageSetPrimaryView,
 )
 
 urlpatterns = [
@@ -20,4 +22,6 @@ urlpatterns = [
     path('my-products/', WholesalerProductListView.as_view(), name='my-products'),
     path('my-products/<int:pk>/', WholesalerProductDetailView.as_view(), name='my-product-detail'),
     path('my-products/<int:product_id>/images/', ProductImageUploadView.as_view(), name='product-image-upload'),
+    path('my-products/images/<int:pk>/', ProductImageDeleteView.as_view(), name='product-image-delete'),
+    path('my-products/images/<int:pk>/set-primary/', ProductImageSetPrimaryView.as_view(), name='product-image-set-primary'),
 ]
